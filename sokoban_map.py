@@ -1,12 +1,15 @@
+import sys
 
 
 class SokobanMap:
     """
-    Instance of a Sokoban game map.
+    Instance of a Sokoban game map. You may use this class and its functions
+    directly or duplicate and modify it in your solution. You should avoid
+    modifying this file directly.
 
     COMP3702 2019 Assignment 1 Support Code
 
-    Last updated by njc 05/08/19
+    Last updated by njc 11/08/19
     """
 
     # input file symbols
@@ -15,33 +18,21 @@ class SokobanMap:
     PLAYER_SYMBOL = 'P'
     OBSTACLE_SYMBOL = '#'
     FREE_SPACE_SYMBOL = ' '
+    BOX_ON_TGT_SYMBOL = 'b'
+    PLAYER_ON_TGT_SYMBOL = 'p'
 
     # move symbols (i.e. output file symbols)
-    LEFT = 'L'
-    RIGHT = 'R'
-    UP = 'U'
-    DOWN = 'D'
+    LEFT = 'l'
+    RIGHT = 'r'
+    UP = 'u'
+    DOWN = 'd'
 
     # render characters
-    #FREE_GLYPH = '\u0020'
-    #FREE_GLYPH = '  '
-    FREE_GLYPH = ' '
-
-    #OBST_GLYPH = '\u2573'
-    #OBST_GLYPH = '\u25AE'
-    #OBST_GLYPH = '\u2B1B'
-    OBST_GLYPH = '#'
-
-    #BOX_GLYPH = '\u22A0'
-    #BOX_GLYPH = '\u26CB'
-    BOX_GLYPH = 'B'
-
-    #TGT_GLYPH = '\u25A2'
-    #TGT_GLYPH = '\u2BCC'
-    TGT_GLYPH = 'T'
-
-    #PLAYER_GLYPH = '\u26C4'
-    PLAYER_GLYPH = 'P'
+    FREE_GLYPH = '   '
+    OBST_GLYPH = 'XXX'
+    BOX_GLYPH = '[B]'
+    TGT_GLYPH = '(T)'
+    PLAYER_GLYPH = '<P>'
 
     def __init__(self, filename):
         """
@@ -76,6 +67,14 @@ class SokobanMap:
                     rows[i][j] = self.FREE_SPACE_SYMBOL
                 elif rows[i][j] == self.PLAYER_SYMBOL:
                     player_position = (i, j)
+                    rows[i][j] = self.FREE_SPACE_SYMBOL
+                elif rows[i][j] == self.BOX_ON_TGT_SYMBOL:
+                    box_positions.append((i, j))
+                    tgt_positions.append((i, j))
+                    rows[i][j] = self.FREE_SPACE_SYMBOL
+                elif rows[i][j] == self.PLAYER_ON_TGT_SYMBOL:
+                    player_position = (i, j)
+                    tgt_positions.append((i, j))
                     rows[i][j] = self.FREE_SPACE_SYMBOL
 
         assert len(box_positions) == len(tgt_positions), "Number of boxes does not match number of targets"
@@ -185,6 +184,77 @@ class SokobanMap:
             print(line)
 
         print('\n\n')
+
+    def is_finished(self):
+        finished = True
+        for i in self.box_positions:
+            if i not in self.tgt_positions:
+                finished = False
+        return finished
+
+
+def main(arglist):
+    """
+    Run a playable game of Sokoban using the given filename as the map file.
+    :param arglist: map file name
+    """
+    try:
+        import msvcrt
+        getchar = msvcrt.getch
+    except ImportError:
+        getchar = sys.stdin.read(1)
+
+    if len(arglist) != 1:
+        print("Running this file directly launches a playable game of Sokoban based on the given map file.")
+        print("Usage: sokoban_map.py [map_file_name]")
+        return
+
+    print("Use the arrow keys to move. Press 'q' to quit. Press 'r' to restart the map.")
+
+    map_inst = SokobanMap(arglist[0])
+    map_inst.render()
+
+    steps = 0
+
+    while True:
+        char = getchar()
+
+        if char == b'q':
+            break
+
+        if char == b'r':
+            map_inst = SokobanMap(arglist[0])
+            map_inst.render()
+
+            steps = 0
+
+        if char == b'\xe0':
+            # got arrow - read direction
+            dir = getchar()
+            if dir == b'H':
+                a = SokobanMap.UP
+            elif dir == b'P':
+                a = SokobanMap.DOWN
+            elif dir == b'K':
+                a = SokobanMap.LEFT
+            elif dir == b'M':
+                a = SokobanMap.RIGHT
+            else:
+                print("!!!error")
+                a = SokobanMap.UP
+
+            map_inst.apply_move(a)
+            map_inst.render()
+
+            steps += 1
+
+            if map_inst.is_finished():
+                print("Puzzle solved in " + str(steps) + " steps!")
+                return
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
 
 
 
