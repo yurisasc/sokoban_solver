@@ -1,3 +1,11 @@
-# Assignment 1 Support Code
+# Assignment 1: Sokoban - Discrete Search
 
-Support code for assignment 1 (Sokoban)
+##### Work by: Yuris Aryansyah Shalichin Cakranegara
+Support code provided by Course Coordinator.
+
+##### Instructions to run
+In the directory, run directly from command prompt:
+`python3 sokoban.py inputFileName outputFileName`
+Example:
+`python3 sokoban.py testcases/1box_m1.txt result.txt`
+
